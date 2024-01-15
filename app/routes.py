@@ -1,20 +1,47 @@
 from flask import request
-from . import app
-from data.tasks import tasks_list
+from app import app, db
+from my_data.posts import tasks_data
+from app.models import Post
 
-tasks = []
+# # We will setup DB later, for now we will store all new users in this list
+# users = []
 
-# Creating a new task
-@app.route('/tasks', methods=['POST'])
-def create_task():
+@app.route('/')
+def index():
+    first_name = 'Appollo'
+    last_name = ' Jupiter'
+    return f'Hello World!! - From {first_name} {last_name}'
+
+# USER ENDPOINTS 
+
+# Get all posts
+@app.route('/posts')
+def get_posts():
+    # Get the posts from the database
+    posts = db.session.execute(db.select(Post)).scalars().all()
+    # return a list of the dictionary version of each post in posts
+    return [p.to_dict() for p in posts]
+
+# Get single post by ID
+@app.route('/posts/<int:post_id>')
+def get_post(post_id):
+    # Get the Post from the database based on the ID
+    post = db.session.get(Post, post_id)
+    if post:
+        return post.to_dict()
+    else:
+        return {'error': f'Post with an ID of {post_id} does not exist'}, 404
+
+# Create new Post route
+@app.route('/posts', methods=['POST'])
+def create_post():
     # Check to see that the request body is JSON
     if not request.is_json:
-        return {'error': 'Your content type must be application/json'}, 400 
-    
+        return {'error': 'You content-type must be application/json'}, 400
+    # Get the data from the request body
     data = request.json
-    
-    #validate that the data has all of the required feilds
-    required_fields = ['title', 'description']
+    # Validate the incoming data
+    required_fields = ['title', 'body']
     missing_fields = []
     for field in required_fields:
         if field not in data:
@@ -22,44 +49,10 @@ def create_task():
     if missing_fields:
         return {'error': f"{', '.join(missing_fields)} must be in the request body"}, 400
     
-
-    # Get the value from the data
+    # Get data from the body
     title = data.get('title')
-    description = data.get('description')
+    body = data.get('body')
 
-    # Check to see if any current task titles already exists
-    for task in tasks:
-        if task['title'] == title:
-            return {'error': 'A task with that title already exists'}, 400
-
-
-    new_task = {
-        "id": len(tasks) +1,
-        "title": title,
-        "description": description,
-        "completed": "",
-        "createdAt": "2024-01-09T11:25:45",
-    }
-    tasks.append(new_task)
-    return new_task, 201
-
-
-
-
-@app.route('/')
-def index():
-    return f"Hello, please search for a task"
-
-@app.route('/tasks')
-def get_tasks():
-    tasks = tasks_list
-    return tasks
-
-
-@app.route('/tasks/<int:task_id>')
-def get_task(task_id):
-    task = tasks_list
-    for task in task:
-        if task['id'] == task_id:
-            return task
-    return
+    # Create a new instance of Post which will add to our database
+    new_post = Post(title=title, body=body, user_id=4)
+    return new_post.to_dict(), 201

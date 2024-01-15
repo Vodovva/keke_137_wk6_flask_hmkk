@@ -1,20 +1,20 @@
 from app import db
 from datetime import datetime
 
-class Task(db.Model):
+class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
-    description = db.Column(db.String, nullable=False)
-    completed = db.Column(db.String, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    
+    body = db.Column(db.String, nullable=False)
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    # In SQL - user_id INTEGER NOT NULL, FOREIGN KEY(user_id) REFERENCES user(id)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.save()
 
     def __repr__(self):
-        return f"<Task {self.id}|{self.title}>"
+        return f"<Post {self.id}|{self.title}>"
 
     def save(self):
         db.session.add(self)
@@ -24,7 +24,7 @@ class Task(db.Model):
         return {
             "id": self.id,
             "title": self.title,
-            "description": self.description,
-            "completed": self.completed,
-            "dateCreated": self.date_created
+            "body": self.body,
+            "dateCreated": self.date_created,
+            "userId": self.user_id
         }
