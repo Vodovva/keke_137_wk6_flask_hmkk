@@ -1,7 +1,7 @@
 from flask import request
 from app import app, db
-from my_data.posts import tasks_data
-from app.models import Post
+from my_data.tasks import tasks_data
+from app.models import Tasks
 
 # # We will setup DB later, for now we will store all new users in this list
 # users = []
@@ -15,26 +15,26 @@ def index():
 # USER ENDPOINTS 
 
 # Get all posts
-@app.route('/posts')
-def get_posts():
+@app.route('/tasks')
+def get_tasks():
     # Get the posts from the database
-    posts = db.session.execute(db.select(Post)).scalars().all()
+    tasks = db.session.execute(db.select(Tasks)).scalars().all()
     # return a list of the dictionary version of each post in posts
-    return [p.to_dict() for p in posts]
+    return [tasks.to_dict() for p in tasks]
 
 # Get single post by ID
-@app.route('/posts/<int:post_id>')
-def get_post(post_id):
+@app.route('/tasks/<int:tasks_id>')
+def get_tasks(tasks_id):
     # Get the Post from the database based on the ID
-    post = db.session.get(Post, post_id)
-    if post:
-        return post.to_dict()
+    tasks = db.session.get(Tasks, task_id)
+    if tasks:
+        return tasks.to_dict()
     else:
-        return {'error': f'Post with an ID of {post_id} does not exist'}, 404
+        return {'error': f'Tasks with an ID of {tasks_id} does not exist'}, 404
 
 # Create new Post route
-@app.route('/posts', methods=['POST'])
-def create_post():
+@app.route('/tasks', methods=['TASKS'])
+def create_tasks():
     # Check to see that the request body is JSON
     if not request.is_json:
         return {'error': 'You content-type must be application/json'}, 400
@@ -54,5 +54,5 @@ def create_post():
     body = data.get('body')
 
     # Create a new instance of Post which will add to our database
-    new_post = Post(title=title, body=body, user_id=4)
-    return new_post.to_dict(), 201
+    new_tasks = Tasks(title=title, body=body, user_id=4)
+    return new_tasks.to_dict(), 201
